@@ -1,7 +1,22 @@
 {
-    "java.project.sourcePaths": ["src"],
-    "java.project.outputPath": "bin",
-    "java.project.referencedLibraries": [
-        "lib/**/*.jar"
-    ]
+  "java.project.sourcePaths": ["src"],
+  "java.project.outputPath": "bin",
+  "java.project.referencedLibraries": [
+    "lib\\flatlaf-3.6.2.jar",
+    "lib\\flatlaf-intellij-themes-3.6.2.jar",
+    "lib\\gson-2.13.2.jar",
+    "lib\\Java-WebSocket-1.6.0.jar",
+    "lib\\miglayout-core-11.0.jar",
+    "lib\\miglayout-swing-11.0.jar",
+    "lib\\mysql-connector-j-9.5.0.jar",
+    "lib\\slf4j-api-2.0.17.jar",
+    "c:\\PBO Project\\tokobungawilis-client-tier\\lib\\miglayout-core-11.0.jar",
+    "c:\\PBO Project\\tokobungawilis-client-tier\\lib\\Java-WebSocket-1.6.0.jar",
+    "c:\\PBO Project\\tokobungawilis-client-tier\\lib\\flatlaf-intellij-themes-3.6.2.jar",
+    "c:\\PBO Project\\tokobungawilis-client-tier\\lib\\flatlaf-3.6.2.jar",
+    "c:\\PBO Project\\tokobungawilis-client-tier\\lib\\gson-2.13.2.jar",
+    "c:\\PBO Project\\tokobungawilis-client-tier\\lib\\mysql-connector-j-9.5.0.jar",
+    "c:\\PBO Project\\tokobungawilis-client-tier\\lib\\slf4j-api-2.0.17.jar",
+    "c:\\PBO Project\\tokobungawilis-client-tier\\lib\\miglayout-swing-11.0.jar"
+  ]
 }
