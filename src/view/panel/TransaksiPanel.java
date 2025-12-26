@@ -4,212 +4,169 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+
 import dao.TransaksiDAO;
 import model.Transaksi;
+import view.TransaksiForm;
 import view.websocket.RealtimeClient;
 
 public class TransaksiPanel extends JPanel {
-  private TransaksiDAO transaksiDAO;
-  private DefaultTableModel model;
-  private JTable table;
-  private RealtimeClient realtimeClient;
-  private String[] kolom = { "ID", "Produk ID", "Jumlah", "Total", "Pembeli" };
 
-  public TransaksiPanel(TransaksiDAO transaksiDAO, RealtimeClient realtimeClient) {
-    this.transaksiDAO = transaksiDAO;
-    this.realtimeClient = realtimeClient;
-    setLayout(new BorderLayout());
-    setBackground(new Color(232, 245, 233));
-    initializeUI();
-    loadData();
-  }
+    private TransaksiDAO transaksiDAO;
+    private DefaultTableModel model;
+    private JTable table;
+    private RealtimeClient realtimeClient;
 
-  private void initializeUI() {
-    model = new DefaultTableModel(kolom, 0) {
-      @Override
-      public boolean isCellEditable(int row, int column) {
-        return false;
-      }
-    };
+    private String[] kolom = { "ID", "Produk ID", "Jumlah", "Total", "Pembeli" };
 
-    table = new JTable(model);
+    public TransaksiPanel(TransaksiDAO transaksiDAO, RealtimeClient realtimeClient) {
+        this.transaksiDAO = transaksiDAO;
+        this.realtimeClient = realtimeClient;
 
-    JScrollPane scrollPane = new JScrollPane(table);
-    add(scrollPane, BorderLayout.CENTER);
+        setLayout(new BorderLayout());
+        setBackground(new Color(232, 245, 233));
 
-    JPanel panelAksi = createCrudPanel();
-    add(panelAksi, BorderLayout.SOUTH);
-  }
-
-  private void loadData() {
-    try {
-      List<Transaksi> daftarTransaksi = transaksiDAO.findAll();
-      model.setRowCount(0);
-      for (Transaksi t : daftarTransaksi) {
-        model.addRow(new Object[] {
-            t.getId(),
-            t.getProdukId(),
-            t.getJumlah(),
-            t.getTotal(),
-            t.getPembeli()
-        });
-      }
-    } catch (Exception ex) {
-      JOptionPane.showMessageDialog(this, "Gagal ambil data transaksi: " + ex.getMessage());
-    }
-  }
-
-  private JPanel createCrudPanel() {
-    JPanel panelAksi = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-
-    JButton btnTambah = new JButton("Tambah");
-    JButton btnEdit = new JButton("Edit");
-    JButton btnHapus = new JButton("Hapus");
-
-    styleCrudButton(btnTambah);
-    styleCrudButton(btnEdit);
-    styleCrudButton(btnHapus);
-
-    btnTambah.addActionListener(e -> tambahTransaksi());
-    btnEdit.addActionListener(e -> editTransaksi());
-    btnHapus.addActionListener(e -> hapusTransaksi());
-
-    // HAPUS tombol Refresh
-    panelAksi.add(btnTambah);
-    panelAksi.add(btnEdit);
-    panelAksi.add(btnHapus);
-
-    return panelAksi;
-  }
-
-  private void styleCrudButton(JButton btn) {
-    btn.setBackground(new Color(200, 230, 201));
-    btn.setForeground(new Color(27, 94, 32));
-    btn.setFocusPainted(false);
-    btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-    btn.setBorder(BorderFactory.createEmptyBorder(6, 16, 6, 16));
-  }
-
-  private void tambahTransaksi() {
-    JTextField produkIdField = new JTextField();
-    JTextField jumlahField = new JTextField();
-    JTextField totalField = new JTextField();
-    JTextField pembeliField = new JTextField();
-
-    Object[] message = {
-        "Produk ID:", produkIdField,
-        "Jumlah:", jumlahField,
-        "Total:", totalField,
-        "Pembeli:", pembeliField
-    };
-
-    int option = JOptionPane.showConfirmDialog(
-        this, message, "Tambah Transaksi", JOptionPane.OK_CANCEL_OPTION);
-
-    if (option == JOptionPane.OK_OPTION) {
-      try {
-        Transaksi t = new Transaksi(
-            0,
-            Integer.parseInt(produkIdField.getText()),
-            Integer.parseInt(jumlahField.getText()),
-            Double.parseDouble(totalField.getText()),
-            pembeliField.getText().trim());
-
-        transaksiDAO.insert(t);
+        initUI();
         loadData();
-
-        if (realtimeClient != null && realtimeClient.isConnected()) {
-          realtimeClient.sendMessage("TRANSAKSI:INSERT:" + t.getId() + ":Total=" + t.getTotal());
-        }
-
-      } catch (Exception ex) {
-        JOptionPane.showMessageDialog(this, "Gagal tambah transaksi: " + ex.getMessage());
-      }
     }
-  }
 
-  private void editTransaksi() {
-    int row = table.getSelectedRow();
-    if (row >= 0) {
-      int id = (int) model.getValueAt(row, 0);
-
-      try {
-        Transaksi transaksiLama = transaksiDAO.findById(id);
-        if (transaksiLama == null) {
-          JOptionPane.showMessageDialog(this, "Transaksi tidak ditemukan!");
-          return;
-        }
-
-        JTextField produkIdField = new JTextField(String.valueOf(transaksiLama.getProdukId()));
-        JTextField jumlahField = new JTextField(String.valueOf(transaksiLama.getJumlah()));
-        JTextField totalField = new JTextField(String.valueOf(transaksiLama.getTotal()));
-        JTextField pembeliField = new JTextField(transaksiLama.getPembeli());
-
-        Object[] message = {
-            "Produk ID:", produkIdField,
-            "Jumlah:", jumlahField,
-            "Total:", totalField,
-            "Pembeli:", pembeliField
+    private void initUI() {
+        model = new DefaultTableModel(kolom, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
 
-        int option = JOptionPane.showConfirmDialog(
-            this, message, "Edit Transaksi", JOptionPane.OK_CANCEL_OPTION);
+        table = new JTable(model);
+        table.setRowHeight(24);
 
-        if (option == JOptionPane.OK_OPTION) {
-          try {
-            Transaksi t = new Transaksi(
-                id,
-                Integer.parseInt(produkIdField.getText()),
-                Integer.parseInt(jumlahField.getText()),
-                Double.parseDouble(totalField.getText()),
-                pembeliField.getText().trim());
+        add(new JScrollPane(table), BorderLayout.CENTER);
+        add(createCrudPanel(), BorderLayout.SOUTH);
+    }
 
-            transaksiDAO.update(t);
+    private void loadData() {
+        try {
+            List<Transaksi> list = transaksiDAO.findAll();
+            model.setRowCount(0);
+
+            for (Transaksi t : list) {
+                model.addRow(new Object[] {
+                        t.getId(),
+                        t.getProdukId(),
+                        t.getJumlah(),
+                        t.getTotal(),
+                        t.getPembeli()
+                });
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Gagal memuat data transaksi: " + e.getMessage());
+        }
+    }
+
+    private JPanel createCrudPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panel.setBackground(new Color(232, 245, 233));
+
+        JButton btnTambah = new JButton("Tambah");
+        JButton btnEdit   = new JButton("Edit");
+        JButton btnHapus  = new JButton("Hapus");
+
+        styleButton(btnTambah);
+        styleButton(btnEdit);
+        styleButton(btnHapus);
+
+        btnTambah.addActionListener(e -> tambahTransaksi());
+        btnEdit.addActionListener(e -> editTransaksi());
+        btnHapus.addActionListener(e -> hapusTransaksi());
+
+        panel.add(btnTambah);
+        panel.add(btnEdit);
+        panel.add(btnHapus);
+
+        return panel;
+    }
+
+    private void styleButton(JButton btn) {
+        btn.setBackground(new Color(200, 230, 201));
+        btn.setForeground(new Color(27, 94, 32));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createEmptyBorder(6, 16, 6, 16));
+    }
+
+    // ================= CRUD ACTION =================
+
+    private void tambahTransaksi() {
+        new TransaksiForm(null, transaksiDAO, () -> {
             loadData();
+            kirimRealtime("INSERT");
+        });
+    }
 
-            if (realtimeClient != null && realtimeClient.isConnected()) {
-              realtimeClient.sendMessage("TRANSAKSI:UPDATE:" + t.getId());
+    private void editTransaksi() {
+        int row = table.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Pilih data yang ingin diedit.");
+            return;
+        }
+
+        int id = (int) model.getValueAt(row, 0);
+
+        try {
+            Transaksi t = transaksiDAO.findById(id);
+            if (t == null) {
+                JOptionPane.showMessageDialog(this, "Transaksi tidak ditemukan.");
+                return;
             }
 
-          } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Gagal edit transaksi: " + ex.getMessage());
-          }
+            new TransaksiForm(t, transaksiDAO, () -> {
+                loadData();
+                kirimRealtime("UPDATE");
+            });
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Gagal membuka data transaksi: " + e.getMessage());
         }
-      } catch (Exception ex) {
-        JOptionPane.showMessageDialog(this, "Gagal mengambil data transaksi: " + ex.getMessage());
-      }
-    } else {
-      JOptionPane.showMessageDialog(this, "Pilih baris dulu untuk edit.");
     }
-  }
 
-  private void hapusTransaksi() {
-    int row = table.getSelectedRow();
-    if (row >= 0) {
-      int id = (int) model.getValueAt(row, 0);
-
-      int confirm = JOptionPane.showConfirmDialog(
-          this, "Hapus transaksi ID " + id + "?", "Konfirmasi", JOptionPane.YES_NO_OPTION);
-
-      if (confirm == JOptionPane.YES_OPTION) {
-        try {
-          transaksiDAO.delete(id);
-          loadData();
-
-          if (realtimeClient != null && realtimeClient.isConnected()) {
-            realtimeClient.sendMessage("TRANSAKSI:DELETE:" + id);
-          }
-
-        } catch (Exception ex) {
-          JOptionPane.showMessageDialog(this, "Gagal hapus transaksi: " + ex.getMessage());
+    private void hapusTransaksi() {
+        int row = table.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Pilih data yang ingin dihapus.");
+            return;
         }
-      }
-    } else {
-      JOptionPane.showMessageDialog(this, "Pilih baris dulu untuk hapus.");
-    }
-  }
 
-  public void refreshData() {
-    loadData();
-  }
+        int id = (int) model.getValueAt(row, 0);
+
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Yakin hapus transaksi ID " + id + "?",
+                "Konfirmasi",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                transaksiDAO.delete(id);
+                loadData();
+                kirimRealtime("DELETE:" + id);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this,
+                        "Gagal hapus transaksi: " + e.getMessage());
+            }
+        }
+    }
+
+    private void kirimRealtime(String aksi) {
+        if (realtimeClient != null && realtimeClient.isConnected()) {
+            realtimeClient.sendMessage("TRANSAKSI:" + aksi);
+        }
+    }
+
+    public void refreshData() {
+        loadData();
+    }
 }

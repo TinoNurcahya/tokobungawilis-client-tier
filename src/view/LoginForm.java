@@ -1,6 +1,9 @@
 package view;
 
 import javax.swing.*;
+
+import dao.TransaksiDAO;
+
 import java.awt.*;
 
 public class LoginForm extends JFrame {
@@ -81,7 +84,8 @@ public class LoginForm extends JFrame {
                 new Dashboard("admin").setVisible(true);
             } else if (username.equals("kasir") && password.equals("kasir123")) {
                 dispose();
-                new Dashboard("kasir").setVisible(true);
+                new TransaksiForm(null, new TransaksiDAO(), null);
+
             } else {
                 JOptionPane.showMessageDialog(this, "Username atau Password salah!");
             }
