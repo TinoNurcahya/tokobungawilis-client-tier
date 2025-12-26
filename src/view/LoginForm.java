@@ -9,7 +9,7 @@ public class LoginForm extends JFrame {
     private JButton btnLogin = new JButton("Login");
 
     public LoginForm() {
-        setTitle("Login - Toko Bunga Infinity8");
+        setTitle("Login - Toko Bunga wilis");
         setSize(450, 300);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -32,7 +32,7 @@ public class LoginForm extends JFrame {
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel lblTitle = new JLabel("Toko Bunga Infinity8", SwingConstants.CENTER);
+        JLabel lblTitle = new JLabel("Toko Bunga wilis", SwingConstants.CENTER);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 26));
         lblTitle.setForeground(new Color(200, 230, 201)); // hijau muda
 
